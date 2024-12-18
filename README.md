@@ -1,6 +1,5 @@
 # GAS Framework
-Copyright (C) 2015-2023 Vas Vasiliadis, University of Chicago
-
+**Copyright (C) 2015-2023 Vas Vasiliadis, University of Chicago**
 Directory contents are as follows:
 * `/web` - The GAS web app files
 * `/ann` - Annotator files
