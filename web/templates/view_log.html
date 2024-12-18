@@ -1,0 +1,37 @@
+<!--
+view_log.html - Display details about a user's annotation job
+Copyright (C) 2015-2023 Vas Vasiliadis <vas@uchicago.edu>
+University of Chicago
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Annotation Log{% endblock %}
+
+{% block body %}
+
+    {% include "header.html" %}
+
+    <div class="container">
+
+        <div class="page-header">
+            <h1>Annotation Log for Job {{ job_id }}</h1>
+        </div>
+
+        <!-- DISPLAY LOG FILE CONTENTS -->
+        <!-- 
+        The well class is a Bootstrap component that creates a contained, inset area with a light gray background and rounded borders
+        It helps visually separate the log content from the rest of the page 
+        -->
+        <div class="well">
+            <!-- The <pre> tag preserves the exact formatting of the log output, both spaces and line breaks, in the text exactly as they appear in the original log file -->
+            <pre>{{ log_content }}</pre>
+        </div>
+
+        <hr />
+    
+        <a href="{{ url_for('annotation_details', job_id = job_id) }}">&larr; back to annotation details</a>
+
+    </div> <!-- container -->
+
+{% endblock %}

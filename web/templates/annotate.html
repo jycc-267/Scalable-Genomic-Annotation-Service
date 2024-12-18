@@ -1,0 +1,102 @@
+<!--
+annotate.html - Direct upload to Amazon S3 using signed POST request
+Copyright (C) 2015-2024 Vas Vasiliadis <vas@uchicago.edu>
+University of Chicago
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Annotate{% endblock %}
+
+{% block body %}
+
+    {% include "header.html" %}
+
+    <div class="container">
+    
+        <div class="page-header">
+            <h1>Annotate VCF File</h1>
+        </div>
+
+        <div class="form-wrapper">
+            <form role="form" action="{{ s3_post.url }}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {% for key, value in s3_post.fields.items() %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}" />
+                {% endfor %}
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="upload">Select VCF Input File</label>
+                        <div class="input-group col-md-12">
+                            <span class="input-group-btn">
+                                <span class="btn btn-default btn-file btn-lg">Browse&hellip; <input type="file" name="file" id="upload-file" /></span>
+                            </span>
+                            <input type="text" class="form-control col-md-6 input-lg" readonly />
+                        </div>
+                    </div>
+                </div>
+
+                <br />
+
+                <div class="form-actions">
+                    <input class="btn btn-lg btn-primary" type="submit" value="Annotate" id="annotateButton" />
+                </div>
+            </form>
+        </div>
+
+        <!--The HTML <script> tag is used to define a client-side script (JavaScript)-->
+        <script>
+        // The addEventListener() method of the DOM interface "EventTarget" sets up a function that will be called whenever the specified event is delivered to the target
+        // Common targets are its children clasees such as Element and Document
+        // Document is an interface that represents any web page loaded in the browser and serves as an entry point into the web page's content
+        // EventTarget.addEventListener(): https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+        // DOMContentLoaded event for Document: https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // Document.getElementById(): https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
+            // Return an Element object representing the element whose id property matches the specified unique id string of a html element.
+            // The actual object returned is an instance of a more specific interface that extends Element, depending on the type of HTML element found.
+            const fileInput = document.getElementById("upload-file");
+            const annotateButton = document.getElementById("annotateButton");
+            const maxSize = 150 * 1024; // 150KB in bytes
+            const user_role = "{{ role }}";
+
+            // change event for HTMLElement: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event
+            // example: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/value#retrieving_a_color_value
+            fileInput.addEventListener("change", function() {
+
+                // The this keyword inside that function refers to the element that triggered the event
+                // HTMLInputElement.files (FileList): https://developer.mozilla.org/en-US/docs/Web/API/FileList
+                // All <input> element nodes have a files attribute of type FileList on them which allows access to the items in this list
+                if (this.files.length > 0) {
+
+                    // A File object is a specific kind of Blob
+                    // File: https://developer.mozilla.org/en-US/docs/Web/API/File
+                    // Blob.size: https://developer.mozilla.org/en-US/docs/Web/API/Blob/size
+                    const file = this.files[0];
+
+                    if (user_role === "free_user" && file.size > maxSize) {
+
+                        // The popup window
+                        // Window.alert() method: https://developer.mozilla.org/en-US/docs/Web/API/Window/alert
+                        alert("File size exceeds 150KB. Please subscribe to upload larger files.");
+
+                        // HTMLInputElement.value: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/value
+                        this.value = ""; // Clear the file input
+
+                        // HTMLButtonElement.disabled: https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement/disabled
+                        annotateButton.disabled = true;
+                    } else {
+                        annotateButton.disabled = false;
+                    }
+                } else {
+                    annotateButton.disabled = true;
+                }
+            });
+        });
+        </script>
+    
+    </div> <!-- container -->
+
+{% endblock %}

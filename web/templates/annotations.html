@@ -1,0 +1,92 @@
+<!--
+annotations.html - Display a list of user annotation jobs with links to details for each job
+Copyright (C) 2015-2023 Vas Vasiliadis <vas@uchicago.edu>
+University of Chicago
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Annotations{% endblock %}
+
+{% block body %}
+
+    {% include "header.html" %}
+
+    <div class="container">
+
+        <div class="page-header">
+            <h1>My Annotations</h1>
+        </div>
+
+        <div class="row text-right">
+            <a href="{{ url_for('annotate') }}" title="Request New Annotation">
+                <button type="button" class="btn btn-link" aria-label="Request New Annotation">
+                    <i class="fa fa-plus fa-lg"></i> Request New Annotation
+                </button>
+            </a>
+        </div>
+
+        <!-- DISPLAY LIST OF ANNOTATION JOBS -->
+
+        <!-- 
+        The <div> element is used as a container that divides an HTML document into sections
+        <div> elements can contain flow content such as headings, paragraphs, links, images, etc
+        -->
+        {% if has_jobs %}
+            <!-- Bootstrap CSS Tables Reference: https://www.w3schools.com/bootstrap/bootstrap_ref_css_tables.asp -->
+            <div class="table-responsive">
+                <table class="table">
+                    <!--
+                    <thead>: The table head element defines the headings of table columns encapsulated in table rows
+                    <tr>: The table row element is used to add rows to a table before adding table data <td> or table headings <th>
+                    <td>: The table data element is nested inside a table row element <tr> in order to add a cell of data to a table
+                    <th>: The table heading element is used to add titles to rows and columns of a table and must be enclosed in a table row element <tr>
+                    <tbody>: The table body element contains all table data other than table heading <th> and table footer content <tfoot> 
+                    https://www.codecademy.com/learn/learn-html/modules/learn-html-tables/cheatsheet
+                    -->
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Request Time</th>
+                            <th>VCF File Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 
+                        Jinja2 tutorial for Loops and conditionals: 
+                            https://ttl255.com/jinja2-tutorial-part-2-loops-and-conditionals/
+                            https://realpython.com/primer-on-jinja-templating/#control-the-flow-in-jinja
+                        Structure of Signed Policy: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/generate_presigned_post.html
+                        -->
+                        {% for ann_job in ann_jobs %}
+                            <tr>
+                                <!--
+                                url_for() is a Flask helper function that generates URLs for routes in the application
+                                'annotation_details' is the name of the route handler (endpoint) displaying the details of a specific annotation job
+                                job_id = ann_job.job_id is passing the job ID as a parameter to that route
+                                -->
+                                <td><a href="{{ url_for('annotation_details', job_id = ann_job.job_id) }}">{{ ann_job.job_id }}</a></td>
+                                <td>{{ ann_job.submit_time }}</td>
+                                <td>{{ ann_job.input_file_name }}</td>
+                                <td>{{ ann_job.job_status }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <!-- Bootstrap Grid System
+            <div class="row">...</div> to enclose page elements 
+            https://getbootstrap.com/docs/4.0/layout/grid/
+            -->
+            <div class="row">
+                <div class="col">
+                    <p>No annotations found.</p>
+                </div>
+            </div>
+        {% endif %}
+
+    </div> <!-- container -->
+
+{% endblock %}

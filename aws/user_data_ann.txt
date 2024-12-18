@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Download and unzip GAS code
+aws s3 cp s3://mpcs-students/jycchien/gas.zip /home/ubuntu/gas.zip
+sudo unzip /home/ubuntu/gas.zip -d /home/ubuntu/gas
+
+# Change ownership of GAS files
+sudo chown -R ubuntu:ubuntu /home/ubuntu/gas
+
+
+# Activate virtual environment and run the web server
+sudo -u ubuntu bash << EOF
+source /usr/local/bin/virtualenvwrapper.sh
+workon mpcs
+cd /home/ubuntu/gas/ann && ./run_ann_webhook.sh
+EOF
