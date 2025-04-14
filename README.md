@@ -1,5 +1,4 @@
-## GAS Framework
-**Disclaimer: Copyright (C) 2015-2024 Vas Vasiliadis, University of Chicago**
+# GAS Framework
 
 Directory contents are as follows:
 * `/web` - The GAS web app files
@@ -50,3 +49,5 @@ The restoration process is designed with the purpose to enhance scalability as t
 In terms of preserving reliability, which is probably the most interesting part, I was hesitated between `SNS to Lambda` versus `SNS to SQS to Lambda`. The primary advantage of having a SQS in between SNS and Lambda is _reprocessing_. Assume that the Lambda fails to process certain event for some reason (e.g. timeout or lack of memory footprint), we can increase the timeout (to max 15 minutes) or memory (to max of 1.5GB) and restart the polling to reprocess the older events. This would not be possible in case of `SNS to Lambda`. However, I decided to do `SNS to Lambda` but have a SQS subscribe to that SNS (`jycchien_results_restore`). In this way, I am able to preserve the persistence provided by SQS and maintain the simplicity of implementing `SNS to Lambda` by serving the restoration topic as a pure trigger (i.e. I don't care about `event` sending to the Lambda by SNS) and let the Lambda do the long polling.
 
 Reference: https://stackoverflow.com/questions/42656485/sns-to-lambda-vs-sns-to-sqs-to-lambda
+
+**Disclaimer: Copyright (C) 2015-2024 Vas Vasiliadis, University of Chicago**
