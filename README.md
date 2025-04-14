@@ -7,6 +7,18 @@ Directory contents are as follows:
 * `/util` - Utility scripts/apps for notifications, archival, and restoration
 * `/aws` - AWS user data files
 
+The system decouples communication between the web server frontend from the annotation backend, allowing the web application to publish job requests asynchronously so that each component is capable of independent scaling and fault isolation.
+
+For the frontend, an Application Load Balancer distributes HTTPS traffic across multiple EC2 instances in an **Auto Scaling group**, ensuring high availability and efficient resource utilization. The Auto Scaling group, configured with a minimum of two instances and a maximum of ten, provides elasticity to handle varying job requests from users while maintaining a baseline capacity for consistent performance.
+
+On the backend, the annotation service is similarly designed for scalability and timely job processing. The annotators utilize polling mechanism and <a href="https://www.redhat.com/en/topics/automation/what-is-a-webhook">webhook pattern</a> along with Amazon **SNS and SQS**, with the latter requiring its own load balancer and auto scaling group respond to the depth of SQS (#number of pending annotation jobs).
+
+The system incorporates several reliability features, including health checks for instances and automated instance replacement. Error budgets are implicitly managed through the auto scaling policies, which maintain a minimum number of two healthy instances. Observability is addressed through AWS's built-in **CloudWatch**, allowing for tracking of key metrics such as instance health, request counts, and latency.
+
+The architecture leverages **Amazon S3** for storing input annotation files, results, and logs, while **DynamoDB** ensures persistent storage of job metadata and user interaction. To enhance scalability and reliability, I implemented asynchronous inter-process communication and serverless workflows for various system functions. For data archival and restoration, I created serverless workflows using **AWS Step Functions and Lambda** that integrated with <a href="https://docs.stripe.com/api">Stripe’s payment API</a>, facilitating efficient lifecycle management between **S3 and Glacier** based on user tiers, including users' account data and uploaded files.
+
+![image](./framework.png)
+
 ## Archive Process
 The design of this periodic background archival task is based on a Flask app that presents an endpoint named `/archive`. This webhook endpoint accept periodic `POST` requests from the `SNS results_archive` topic. The delivery of such POST requests is handled by a AWS Step Functions state machine implemented in `run.py`. After an annotation job is completed, `run.py` starts state machine execution to wait through the time period in which free users are allowed to download the `.annot.vcf` file and then publish the payload to `SNS results_archive`. Finally, inside `archive_app.py` the endpoint `/archive` long-polls the archive message from `SQS results_archive` and does the archival tasks based on the user's role.
 
